@@ -98,17 +98,47 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
 
 
 #create OrderSerializer and extend the model Serializer
+# class OrderSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model=models.Order
+#         # which fields we want to show
+#         fields=['id','customer']
+
+#         # use depth to fetch user data
+#     def __init__(self, *args, **kwargs):
+#         super(OrderSerializer, self).__init__(*args, **kwargs)
+#         self.Meta.depth = 1
+
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
-        model=models.Order
-        # which fields we want to show
-        fields=['id','customer']
+        model = models.Order
+        fields = ['id', 'customer', 'order_time']
 
-        # use depth to fetch user data
-    def __init__(self, *args, **kwargs):
-        super(OrderSerializer, self).__init__(*args, **kwargs)
-        self.Meta.depth = 1
+    def create(self, validated_data):
+        # Ensure that 'customer' is present in the validated data
+        if 'customer' not in validated_data:
+            raise serializers.ValidationError("Customer data is required.")
 
+        # Get the 'customer' data from the validated input
+        customer_data = validated_data.pop('customer')
+        
+        # Check if 'customer_data' is an instance of Customer or a dict
+        if isinstance(customer_data, dict):
+            customer_id = customer_data.get('id')
+            # Fetch the customer object using the provided ID
+            customer = models.Customer.objects.get(id=customer_id)
+        else:
+            customer = customer_data  # Assuming customer_data is the Customer object
+        
+        # Create the order using the validated customer data
+        order = models.Order.objects.create(customer=customer, **validated_data)
+        return order
+
+# Order items
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.OrderItems
+        fields = ['id', 'order','product','qty','price' ]
 
 #create OrderDetailSerializer and extend the model Serializer
 class OrderDetailSerializer(serializers.ModelSerializer):

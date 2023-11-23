@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.auth import login
 
 # Create your views here.
 # VendorList returns all the sellers
@@ -110,16 +111,18 @@ class CustomerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.Customer.objects.all()
     serializer_class = serializers.CustomerDetailSerializer
 
-# we will use csrf decorator and return response
+# we will use csrf decorator and return response---this is old one
 @csrf_exempt
 def customer_login(request):
     username=request.POST.get('username')
     password=request.POST.get('password')
     user=authenticate(username=username,password=password)
     if user:
+        customer=models.Customer.objects.get(user=user)
         msg={
             'bool':True,
             'user':user.username, 
+            'id': customer.id,
         }
     else:
         msg={
@@ -128,6 +131,29 @@ def customer_login(request):
         }
 
     return JsonResponse(msg)
+
+# @csrf_exempt
+# def customer_login(request):
+#     username = request.POST.get('username')
+#     password = request.POST.get('password')
+#     user = authenticate(username=username, password=password)
+    
+#     if user:
+#         login(request, user)  # Log the user in
+#         customer = models.Customer.objects.get(user=user)
+#         request.session['customer_id'] = customer.id  # Set customer_id in session
+#         msg = {
+#             'bool': True,
+#             'user': user.username,
+#             'id': customer.id,
+#         }
+#     else:
+#         msg = {
+#             'bool': False,
+#             'msg': 'Invalid Username/Password!'
+#         }
+
+#     return JsonResponse(msg)
 
 
 # we will use csrf decorator and return response
@@ -180,11 +206,34 @@ def customer_register(request):
 
     return JsonResponse(msg)
 
-# OrderList returns all the sellers
+# OrderList returns all the orders
 class OrderList(generics.ListCreateAPIView):
     queryset = models.Order.objects.all()
     serializer_class = serializers.OrderSerializer
-    pagination_class=pagination.LimitOffsetPagination
+    # pagination_class=pagination.LimitOffsetPagination
+
+    # def post(self, request, *args, **kwargs):
+    #     print(request.POST)
+    #     return super().post(request, *args, **kwargs)
+    
+    # def post(self, request, *args, **kwargs):
+    #     try:
+    #         # Existing code for order creation and processing
+
+    #         return Response({"message": "Order created successfully"}, status=status.HTTP_201_CREATED)
+    #     except Exception as e:
+    #         # Log the exception for backend debugging purposes
+    #         logger.error(f"Error processing order: {str(e)}")
+    #         # Return a clearer error message in JSON format
+    #         return Response({"error": "Internal Server Error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Order items returns all the order items
+class OrderItemList(generics.ListCreateAPIView):
+    queryset = models.OrderItems.objects.all()
+    serializer_class = serializers.OrderItemSerializer
+    # pagination_class=pagination.LimitOffsetPagination
+
 
 
 # OrderDetail returns all the details of the Customers

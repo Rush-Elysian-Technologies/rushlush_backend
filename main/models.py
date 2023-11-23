@@ -89,9 +89,12 @@ class Customer(models.Model):
 # Order Model
 class Order(models.Model):
     # who made this order, using cascade if we delete the customer, order data will  be deleted
-    customer=models.ForeignKey(Customer,on_delete=models.CASCADE)
+    customer=models.ForeignKey(Customer,on_delete=models.CASCADE,related_name='customer_orders')
     # order time
     order_time=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return '%s' % (self.order_time)
 
 
 # Order Items Model 
@@ -102,7 +105,9 @@ class OrderItems(models.Model):
     order=models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_items')
     # which product the customer ordered
     product=models.ForeignKey(Product,on_delete=models.CASCADE)
-
+    qty=models.IntegerField(default=1)
+    price=models.DecimalField(max_digits=10,decimal_places=2,default=0)
+    
     # we will return product title
     def __str__(self):
         return self.product.title

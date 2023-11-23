@@ -29,8 +29,9 @@ urlpatterns = [
     path('customer/login/', views.customer_login,name='customer_login'),
     path('customer/register/', views.customer_register,name='customer_register'),
     # Orders
-    path('orders/', views.OrderList.as_view()),
+    path('orders/', views.OrderList.as_view(), name='order-list'),
     path('order/<int:pk>/', views.OrderDetail.as_view()),
+    path('orderitems/', views.OrderItemList.as_view()),
 ]
 
 urlpatterns+=router.urls
